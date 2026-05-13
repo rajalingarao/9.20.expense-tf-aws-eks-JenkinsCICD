@@ -20,7 +20,8 @@ module "db" {
   # DB subnet group
   create_db_subnet_group = false
   db_subnet_group_name = data.aws_ssm_parameter.db_subnet_group_name.value
-
+  skip_final_snapshot = true
+  
   # DB parameter group
   family = "mysql8.0"
 
@@ -41,22 +42,22 @@ module "db" {
     }
   ]
 
-  options = [
-    {
-      option_name = "MARIADB_AUDIT_PLUGIN"
+  # options = [
+  #   {
+  #     option_name = "MARIADB_AUDIT_PLUGIN"
 
-      option_settings = [
-        {
-          name  = "SERVER_AUDIT_EVENTS"
-          value = "CONNECT"
-        },
-        {
-          name  = "SERVER_AUDIT_FILE_ROTATIONS"
-          value = "37"
-        },
-      ]
-    },
-  ]
+  #     option_settings = [
+  #       {
+  #         name  = "SERVER_AUDIT_EVENTS"
+  #         value = "CONNECT"
+  #       },
+  #       {
+  #         name  = "SERVER_AUDIT_FILE_ROTATIONS"
+  #         value = "37"
+  #       },
+  #     ]
+  #   },
+  # ]
 
   tags = merge(
      var.common_tags,

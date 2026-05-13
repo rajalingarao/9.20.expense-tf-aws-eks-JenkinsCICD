@@ -5,6 +5,7 @@
     9.22.Jenkins-backend-eks
     9.23.Jenkins-frontend-eks
 
+* Here we are docker containerization for building docker images, deploying using kubernetes with helm charts. not doing scanning here.
 
 # Infrastructure creation and deletion
 
@@ -97,7 +98,7 @@ CREATE TABLE IF NOT EXISTS transactions (
 
 * Create the User:
 ```
-CREATE USER IF NOT EXISTS 'expense'@'%' IDENTIFIED BY 'ExpenseApp1';
+CREATE USER IF NOT EXISTS 'expense'@'%' IDENTIFIED BY 'ExpenseApp@1';
 ```
 * Creates a MySQL user named expense that can connect from any host ('%').
 
