@@ -1,3 +1,15 @@
+# How to delete unnecessary files: 
+
+```
+for d in 00-vpc/ 10-sg/ 20-db/ 30-bastion/ 40-eks/ 50-acm/ 60-ingress-alb/ 70-ecr/ ; do
+  echo "Removing from $d:"
+  echo "  $d/.terraform"
+  echo "  $d/.terraform.lock.hcl"
+  rm -rf "$d/.terraform" "$d/.terraform.lock.hcl"
+  echo "deleted files from $d"
+done
+```
+
 
 # Project consists of below componets:
     9.20.expense-tf-aws-eks-JenkinsCICD
@@ -178,12 +190,9 @@ kubens expense
 kubectl get pods
 ```
 
-* Please run the 'aws configure' on jenkins-agent on ec2-user.
-    * aws configure
-    * Access Key
-    * Secret Access Key
-    * Default Region name
-    * Default output format
+# Jenkins Agent authentication
+* Please run the 'aws configure' on jenkins-agent on ec2-user or attach a role.
+ $aws configure
 
 
 * Trouble shooting the Mysql Database:
@@ -201,11 +210,58 @@ USE transactions;
 Select * from transactions;
 ```
 
+Note: We can do cluster upgradation in eks, the applications are as deployments.
+We will follow the cluster upgradation steps.
+
+# Cluster upgradation process start here:
+
+1. first we need to get another node group called green.
+2. taint/cordon the green nodes, so that they should not get any pods scheduled
+    * kubectl cordon ip-10-0-12-237.ec2.internal (green nodes)
+    * kubectl cordon ip-10-0-11-43.ec2.internal (green nodes)
+
+3. now upgrade your control plane, do it from AWS console that is 1.34 to 1.35 [Control plan upgradation first]
+4. upgrade green node group also 1.34 to 1.35 [Nodes upgradation second], workload at blue nodes
+5. shift the workloads from 1.34 node group to 1.35 means follow below two steps
+
+6. taint/cordon blue nodes.  Note: cordon and uncordon are best options then taint and untaint
+    * kubectl cordon ip-10-0-12-249.ec2.internal (blue nodes)
+    * kubectl cordon ip-10-0-12-202.ec2.internal (blue nodes)
+
+7. untaint/uncordon green nodes
+    * kubectl uncordon ip-10-0-12-237.ec2.internal (green nodes)
+    * kubectl uncordon ip-10-0-11-43.ec2.internal (green nodes)
+
+8. drain blue nodes
+  * USED for pods 
+    * kubectl drain --ignore-daemonsets ip-10-0-12-249.ec2.internal
+    * kubectl drain --ignore-daemonsets ip-10-0-12-202.ec2.internal
+
+    * kubectl drain --ignore-daemonsets ip-10-0-12-82.ec2.internal  getting error,because pod running
+    * kubectl drain --ignore-daemonsets ip-10-0-11-219.ec2.internal --force
+
+  * USED for Deployment:
+    * kubectl drain --ignore-daemonsets ip-10-0-11-219.ec2.internal (blue nodes only)
+    * kubectl drain --ignore-daemonsets ip-10-0-13-342.ec2.internal (blue nodes only)
+
+```
+kubectl get nodes
+```
+* Note: Please check pods moved from blue nodes to green nodes. Deployment completed.
+```
+kubectl get pods -n kube-system -o wide
+```
+```
+kubectl get nodes
+```
+```
+kubectl get pods -o wide
+```
+
 * Resource delete steps
     First Delete all applications frontend, backend, db.
     Second Delete all Tools Jenkins, all others
     Third Delete infra and its denpendencies.
-
 
 * Important Points:
 * Note:  Before deploy is the process of calling another pipeline cd-deploy. Now deploy is the creating manifest files.

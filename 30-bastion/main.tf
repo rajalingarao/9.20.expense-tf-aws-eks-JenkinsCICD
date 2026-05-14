@@ -8,7 +8,8 @@ module "bastion" {
     #Convert StringList to list and get first element
     #subnet_id = element(split(",",data.aws_ssm_parameter.public_subnet_ids.value),0)
     subnet_id = local.public_subnet_id
-
+    iam_instance_profile   = aws_iam_instance_profile.profile.name
+    
     user_data = file("bastion.sh")
     ami   = data.aws_ami.ami_info.id
     tags =merge(
@@ -19,4 +20,9 @@ module "bastion" {
 
     )
   
+}
+
+resource "aws_iam_instance_profile" "profile" {
+  name = "k8s-instance-profile"
+  role = "k8s-iam-role-authentication"      
 }

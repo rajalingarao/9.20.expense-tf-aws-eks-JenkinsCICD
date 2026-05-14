@@ -11,7 +11,7 @@ module "eks" {
     source = "terraform-aws-modules/eks/aws"
     version = "~> 20.0"
     cluster_name = "${var.project_name}-${var.environment}"
-    cluster_version = "1.34"
+    cluster_version = "1.35"
 
     #it should be false in PROD environment
     cluster_endpoint_public_access = false
@@ -41,22 +41,7 @@ module "eks" {
         instance_type = ["m6i.large","m5.large","m5n.large", "m5zn.large"]
     }
     eks_managed_node_groups = {
-        blue = {
-            min_size = 2
-            max_size = 10
-            desired_size = 2
-            capacity_type = "SPOT"
-            iam_role_additional_policies = {
-  
-             AmazonEBSCSIDriverPolicy          = "arn:aws:iam::aws:policy/service-role/AmazonEBSCSIDriverPolicy"
-             AmazonElasticFileSystemFullAccess = "arn:aws:iam::aws:policy/AmazonElasticFileSystemFullAccess"
-             ElasticLoadBalancingFullAccess = "arn:aws:iam::aws:policy/ElasticLoadBalancingFullAccess"
-
-            }
-            #EKS takes AWS Linux 2 as it;s OS to the nodes
-            key_name = aws_key_pair.eks.key_name
-        }
-        # green = {
+        # blue = {
         #     min_size = 2
         #     max_size = 10
         #     desired_size = 2
@@ -71,6 +56,21 @@ module "eks" {
         #     #EKS takes AWS Linux 2 as it;s OS to the nodes
         #     key_name = aws_key_pair.eks.key_name
         # }
+        green = {
+            min_size = 2
+            max_size = 10
+            desired_size = 2
+            capacity_type = "SPOT"
+            iam_role_additional_policies = {
+  
+             AmazonEBSCSIDriverPolicy          = "arn:aws:iam::aws:policy/service-role/AmazonEBSCSIDriverPolicy"
+             AmazonElasticFileSystemFullAccess = "arn:aws:iam::aws:policy/AmazonElasticFileSystemFullAccess"
+             ElasticLoadBalancingFullAccess = "arn:aws:iam::aws:policy/ElasticLoadBalancingFullAccess"
+
+            }
+            #EKS takes AWS Linux 2 as it;s OS to the nodes
+            key_name = aws_key_pair.eks.key_name
+        }
     }
       tags = var.common_tags 
 }
